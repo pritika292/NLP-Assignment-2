@@ -1,0 +1,5 @@
+torch==1.12.1
+tqdm
+numpy
+nltk==3.5
+matplotlib
