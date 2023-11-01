@@ -253,7 +253,7 @@ plt.subplot(1, 2, 1)
 plt.plot(epochs, losses, label='Training Loss', marker='o')
 plt.xlabel('Epoch')
 plt.ylabel('Training Loss')
-plt.title('Training Loss and Validation Accuracy by Epoch')
+plt.title('Training Loss by Epoch')
 plt.grid(True)
 plt.legend()
 
