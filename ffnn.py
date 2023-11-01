@@ -5,7 +5,7 @@ from torch.nn import init
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import random
-import os
+import re
 import time
 from tqdm import tqdm
 import json
@@ -127,9 +127,16 @@ def load_data(train_data, val_data):
 
     tra = []
     val = []
+    replacement_rules = {'“': '"', '”': '"', '’': "'", '--': ','}
     for elt in training:
+        elt["text"] = elt["text"].lower()
+        for symbol, replacement in replacement_rules.items():
+            elt["text"] = elt["text"].replace(symbol, replacement)
         tra.append((elt["text"].split(),int(elt["stars"]-1)))
     for elt in validation:
+        elt["text"] = elt["text"].lower()
+        for symbol, replacement in replacement_rules.items():
+            elt["text"] = elt["text"].replace(symbol, replacement)
         val.append((elt["text"].split(),int(elt["stars"]-1)))
 
     return tra, val
@@ -151,19 +158,19 @@ if __name__ == "__main__":
 
     # load data
     print("========== Loading data ==========")
-    train_data, valid_data = load_data(args.train_data, args.val_data) # X_data is a list of pairs (document, y); y in {0,1,2,3,4}
+    train_data_json, valid_data_json = load_data(args.train_data, args.val_data) # X_data is a list of pairs (document, y); y in {0,1,2,3,4}
 
     print("Training data : ")
     data_analysis(args.train_data)
     print("\nValidation data : ")
     data_analysis(args.val_data)
 
-    vocab = make_vocab(train_data)
+    vocab = make_vocab(train_data_json)
     vocab, word2index, index2word = make_indices(vocab)
 
     print("========== Vectorizing data ==========")
-    train_data = convert_to_vector_representation(train_data, word2index)
-    valid_data = convert_to_vector_representation(valid_data, word2index)
+    train_data = convert_to_vector_representation(train_data_json, word2index)
+    valid_data = convert_to_vector_representation(valid_data_json, word2index)
     
 
     model = FFNN(input_dim = len(vocab), h = args.hidden_dim)
@@ -171,7 +178,6 @@ if __name__ == "__main__":
     print("========== Training for {} epochs ==========".format(args.epochs))
     losses = [] 
     accuracies = []
-
     for epoch in range(args.epochs):
         model.train()
         optimizer.zero_grad()
@@ -183,6 +189,7 @@ if __name__ == "__main__":
         random.shuffle(train_data) # Good practice to shuffle order of training data
         minibatch_size = 16 
         N = len(train_data) 
+
         total_loss = 0
         for minibatch_index in tqdm(range(N // minibatch_size)):
             optimizer.zero_grad()
@@ -222,6 +229,9 @@ if __name__ == "__main__":
                 predicted_label = torch.argmax(predicted_vector)
                 correct += int(predicted_label == gold_label)
                 total += 1
+                # if predicted_label != gold_label:
+                #     print(valid_data_json[minibatch_index * minibatch_size + example_index])
+                #     print("TRUE : "+str(gold_label)+" PREDICTED : "+ str(predicted_label))
         accuracies.append(correct / total)
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
@@ -231,9 +241,8 @@ if __name__ == "__main__":
     with open("results/ffnn_result.out", "w") as outfile :
         outfile.write("Validation accuracy : {}".format(correct / total))
 
-print(losses)
-print(accuracies)
-
+# print(losses)
+# print(accuracies)
 
 # Learning curve
 epochs = list(range(1, len(losses) + 1))
