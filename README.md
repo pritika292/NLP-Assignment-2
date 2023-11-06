@@ -22,5 +22,8 @@ validation acc >=0.43
 
 validation acc >= 0.31
 
+rnn.py is a variation of the RNN algorithm which uses zeros as initial hidden state.
+rnn_variation.py is a variation of the RNN algorithm which uses a random initial hidden state.
+
 conda create -n cs6320a2 python=3.8
 conda activate cs6320a2
