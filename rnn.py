@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 import torch.optim as optim
+import matplotlib.pyplot as plt
 import math
 import random
 import os
@@ -31,12 +32,14 @@ class RNN(nn.Module):
 
     def forward(self, inputs):
         # [to fill] obtain hidden layer representation (https://pytorch.org/docs/stable/generated/torch.nn.RNN.html)
-        _, hidden = 
+        h0 = torch.zeros(1*self.numOfLayer, 1, self.h)
+        _, hidden = self.rnn(inputs, h0)
         # [to fill] obtain output layer representations
-
+        output = self.W(hidden)
         # [to fill] sum over output 
-
+        output_sum = torch.sum(output, dim=1)
         # [to fill] obtain probability dist.
+        predicted_vector = self.softmax(output_sum)
 
         return predicted_vector
 
@@ -87,6 +90,10 @@ if __name__ == "__main__":
 
     last_train_accuracy = 0
     last_validation_accuracy = 0
+
+    # Added for graphs
+    losses = [] 
+    accuracies = []
 
     while not stopping_condition:
         random.shuffle(train_data)
@@ -141,6 +148,7 @@ if __name__ == "__main__":
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         trainning_accuracy = correct/total
+        losses.append(loss_total)
 
 
         model.eval()
@@ -165,7 +173,7 @@ if __name__ == "__main__":
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         validation_accuracy = correct/total
-
+        accuracies.append(validation_accuracy)
         if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
             stopping_condition=True
             print("Training done to avoid overfitting!")
@@ -173,10 +181,35 @@ if __name__ == "__main__":
         else:
             last_validation_accuracy = validation_accuracy
             last_train_accuracy = trainning_accuracy
-
+        
         epoch += 1
 
+# Learning curve
+epochs = list(range(1, len(losses) + 1))
+plt.figure(figsize=(10, 4))
 
+# Plot the training loss
+plt.subplot(1, 2, 1)
+plt.xlim(0, 10)
+plt.plot(epochs, losses, label='Training Loss', marker='o')
+plt.xlabel('Epoch')
+plt.ylabel('Training Loss')
+plt.title('Training Loss by Epoch')
+plt.grid(True)
+plt.legend()
+
+plt.savefig('rnn_loss_32.png')
+# Plot the validation accuracy on the same graph
+epochs = list(range(1, len(accuracies) + 1))
+plt.figure(figsize=(10, 4))
+plt.plot(epochs, accuracies, label='Validation Accuracy', marker='o', color='green')
+plt.ylim(0.0, 1.0)
+plt.xlabel('Epoch')
+plt.ylabel('Validation Accuracy')
+plt.title('Validation Accuracy by Epoch')
+plt.grid(True)
+plt.legend()
+plt.savefig('rnn_accuracy_32.png')
 
     # You may find it beneficial to keep track of training accuracy or training loss;
 
