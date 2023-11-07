@@ -256,18 +256,18 @@ plt.ylabel('Training Loss')
 plt.title('Training Loss by Epoch')
 plt.grid(True)
 plt.legend()
+plt.savefig('ffnn_training_loss.png')
 
-plt.savefig('loss.png')
 # Plot the validation accuracy on the same graph
 plt.figure(figsize=(10, 4))
 plt.plot(epochs, accuracies, label='Validation Accuracy', marker='o', color='green')
-plt.ylim(0.0, 1.0)
+plt.ylim(0.4, 0.8)
 plt.xlabel('Epoch')
 plt.ylabel('Validation Accuracy')
 plt.title('Validation Accuracy by Epoch')
 plt.grid(True)
 plt.legend()
-plt.savefig('accuracy.png')
+plt.savefig('ffnn_validation_accuracy.png')
 
 
     
